@@ -56,6 +56,46 @@ describe("createDiscordProgressSync", () => {
     });
   });
 
+  it("does not create a progress card for casual chat in strict mode", async () => {
+    const sync = createDiscordProgressSync({
+      cfg: {},
+      accountId: "default",
+      rest: {} as never,
+      channelId: "123",
+      title: "算了，先不折腾了，你太蠢了，这点事情都搞不定",
+      debounceMs: 0,
+      env: { ...process.env, OPENCLAW_DISCORD_PROGRESS_SYNC: "1" },
+    });
+
+    await sync.onAgentRunStart("run-chat-1");
+    await sync.onAssistantMessageStart();
+    await sync.onFinalReply({ text: "说一句实话：这事跟模型本身没关系。" });
+    await sync.finish();
+
+    expect(sendMocks.sendMessageDiscord).not.toHaveBeenCalled();
+    expect(sendMocks.editMessageDiscord).not.toHaveBeenCalled();
+  });
+
+  it("activates progress when a casual title still enters tool execution", async () => {
+    const sync = createDiscordProgressSync({
+      cfg: {},
+      accountId: "default",
+      rest: {} as never,
+      channelId: "123",
+      title: "你先看着办吧，我有点烦",
+      debounceMs: 0,
+      env: { ...process.env, OPENCLAW_DISCORD_PROGRESS_SYNC: "1" },
+    });
+
+    await sync.onAgentRunStart("run-tool-1");
+    await sync.onToolStart({ name: "web_fetch", phase: "start" });
+    await sync.onFinalReply({ text: "已经执行工具并拿到结果。" });
+    await sync.finish();
+
+    expect(sendMocks.sendMessageDiscord).toHaveBeenCalledTimes(1);
+    expect(sendMocks.editMessageDiscord).toHaveBeenCalled();
+  });
+
   it("only emits a standalone timeline message when the task fails", async () => {
     const sync = createDiscordProgressSync({
       cfg: {},
@@ -71,9 +111,10 @@ describe("createDiscordProgressSync", () => {
     await sync.finish({ error: new Error("网络超时") });
 
     expect(sendMocks.sendMessageDiscord).toHaveBeenCalledTimes(2);
-    const timelineCall = sendMocks.sendMessageDiscord.mock.calls.at(-1) as
-      | [string, string]
-      | undefined;
+    const timelineCall = sendMocks.sendMessageDiscord.mock.calls.find((call) => {
+      const tuple = call as unknown[];
+      return typeof tuple[1] === "string" && tuple[1].includes("网络超时");
+    }) as [string, string] | undefined;
     expect(timelineCall?.[1]).toContain("任务失败");
     expect(timelineCall?.[1]).toContain("网络超时");
   });

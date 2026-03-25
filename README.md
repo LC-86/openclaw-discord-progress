@@ -48,6 +48,7 @@ Chinese documentation:
 - Creates one Discord progress card per task
 - Edits the same card throughout execution
 - Freezes the card as a final report when the task completes
+- Uses smoother progress steps so long runs do not jump straight from startup to 90%
 
 ### Channel Noise Control
 

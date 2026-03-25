@@ -40,9 +40,57 @@ export type DiscordProgressSync = {
   finish: (params?: { error?: unknown; aborted?: boolean }) => Promise<void>;
 };
 
+type ProgressDisplayMode = "off" | "strict" | "auto" | "verbose";
+
 function isProgressSyncEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   const raw = env.OPENCLAW_DISCORD_PROGRESS_SYNC?.trim().toLowerCase();
   return raw !== "0" && raw !== "false" && raw !== "off";
+}
+
+function resolveProgressDisplayMode(env: NodeJS.ProcessEnv = process.env): ProgressDisplayMode {
+  const raw = env.OPENCLAW_DISCORD_PROGRESS_MODE?.trim().toLowerCase();
+  if (raw === "off" || raw === "strict" || raw === "auto" || raw === "verbose") {
+    return raw;
+  }
+  return "strict";
+}
+
+function looksLikeTaskRequest(title: string | undefined): boolean {
+  const normalized = title?.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  if (normalized.length < 12) {
+    return false;
+  }
+  const taskPatterns = [
+    /帮我/,
+    /请(帮|给|把|去)/,
+    /看一下/,
+    /查一下/,
+    /分析/,
+    /整理/,
+    /生成/,
+    /修复/,
+    /安装/,
+    /部署/,
+    /打开/,
+    /排查/,
+    /处理/,
+    /实现/,
+    /帮.*(查|做|看|整理|分析|修复)/,
+    /\bplease\b/,
+    /\bhelp me\b/,
+    /\bcheck\b/,
+    /\banaly[sz]e\b/,
+    /\bfix\b/,
+    /\bbuild\b/,
+    /\binstall\b/,
+    /\bdeploy\b/,
+    /\bcreate\b/,
+    /\bmake\b/,
+  ];
+  return taskPatterns.some((pattern) => pattern.test(normalized));
 }
 
 function summarizeText(value: string | undefined, maxLength = 180): string | undefined {
@@ -262,6 +310,7 @@ export function createDiscordProgressSync(params: {
   env?: NodeJS.ProcessEnv;
 }): DiscordProgressSync {
   const enabled = isProgressSyncEnabled(params.env);
+  const mode = resolveProgressDisplayMode(params.env);
   const debounceMs = Math.max(0, Math.round(params.debounceMs ?? 1200));
   const state: ProgressState = {
     title: summarizeText(params.title, 120) ?? "未命名任务",
@@ -279,6 +328,8 @@ export function createDiscordProgressSync(params: {
   let queue: Promise<void> = Promise.resolve();
   let timelineCount = 0;
   let previousStage: ProgressStage | undefined;
+  let activated = mode === "verbose";
+  const taskLikeTitle = looksLikeTaskRequest(state.title);
 
   const runQueued = (task: () => Promise<void>) => {
     queue = queue.catch(() => undefined).then(task);
@@ -353,16 +404,26 @@ export function createDiscordProgressSync(params: {
     patch: Partial<ProgressState>,
     options: {
       force?: boolean;
+      activate?: boolean;
     } = {},
   ) => {
     if (!enabled || disposed) {
       return;
+    }
+    if (mode === "off") {
+      return;
+    }
+    if (options.activate) {
+      activated = true;
     }
     const nextStage = patch.stage ?? state.stage;
     const shouldEmitTimeline = shouldEmitTimelineEvent(previousStage, nextStage);
     Object.assign(state, patch);
     state.percent = clampPercent(state.percent);
     previousStage = state.stage;
+    if (!activated) {
+      return;
+    }
     if (shouldEmitTimeline) {
       await runQueued(emitTimelineEvent);
     }
@@ -379,7 +440,10 @@ export function createDiscordProgressSync(params: {
           percent: 8,
           message: "Agent 已开始执行任务",
         },
-        { force: true },
+        {
+          force: true,
+          activate: mode === "verbose" || taskLikeTitle || mode === "auto",
+        },
       );
     },
     onReasoningStream: async () => {
@@ -388,7 +452,7 @@ export function createDiscordProgressSync(params: {
         percent: Math.max(state.percent, 24),
         message: "正在分析问题和整理执行路径",
         sawReasoning: true,
-      });
+      }, { activate: true });
     },
     onToolStart: async (payload) => {
       state.toolCount += 1;
@@ -401,7 +465,7 @@ export function createDiscordProgressSync(params: {
           payload.phase === "update"
             ? `工具 ${toolName} 正在返回结果`
             : `正在调用工具 ${toolName}`,
-      });
+      }, { activate: true });
     },
     onAssistantMessageStart: async () => {
       await updateState({
@@ -417,14 +481,14 @@ export function createDiscordProgressSync(params: {
         percent: Math.max(state.percent, 60),
         message: "上下文较长，正在压缩历史消息",
         sawCompaction: true,
-      });
+      }, { activate: true });
     },
     onCompactionEnd: async () => {
       await updateState({
         stage: "reasoning",
         percent: Math.max(state.percent, 72),
         message: "上下文压缩完成，继续执行",
-      });
+      }, { activate: true });
     },
     onFinalReply: async (payload) => {
       const summary = summarizeText(payload.text, 220);
@@ -433,6 +497,10 @@ export function createDiscordProgressSync(params: {
         stage: "finalizing",
         percent: Math.max(state.percent, 96),
         message: "最终结果已经生成，正在发送到 Discord",
+      }, {
+        activate:
+          mode === "verbose" ||
+          (mode === "auto" && (taskLikeTitle || (summary?.length ?? 0) >= 80)),
       });
     },
     finish: async (params = {}) => {
@@ -460,6 +528,13 @@ export function createDiscordProgressSync(params: {
             ? errorText ?? (params.aborted ? "任务被中止" : "未知错误")
             : undefined,
       });
+      if (state.stage === "failed") {
+        activated = true;
+      }
+      if (!activated) {
+        disposed = true;
+        return;
+      }
       if (state.stage === "failed") {
         await runQueued(emitTimelineEvent);
       }
