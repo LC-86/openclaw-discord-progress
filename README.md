@@ -20,6 +20,10 @@ This project intentionally separates distribution into two layers:
 
 This keeps the actual capability easy to inspect on GitHub while allowing ClawHub users to discover and activate it through a lightweight skill package.
 
+Chinese documentation:
+
+- `README.zh-CN.md`
+
 ## What Is Included
 
 - `overlay/openclaw/`
@@ -78,6 +82,70 @@ Never commit or publish:
 ```text
 skill/openclaw-discord-progress-installer/
 ```
+
+## Installation
+
+There are two supported installation paths.
+
+### Option A: Install from the ClawHub Skill
+
+Use this path if you want guided setup.
+
+1. Install the skill from ClawHub.
+2. Open the skill:
+
+```text
+skill/openclaw-discord-progress-installer/
+```
+
+3. Follow the instructions in:
+
+- `references/install.md`
+- `references/multi-bot.md`
+
+4. Apply the runtime files from the paired GitHub repository to your OpenClaw checkout.
+5. Rebuild OpenClaw.
+6. Restart the OpenClaw gateway.
+7. Send one real Discord test message and confirm:
+   - exactly one progress card is created
+   - the card updates in place
+   - the final card freezes into a report
+
+### Option B: Install Directly from GitHub
+
+Use this path if you are comfortable editing an OpenClaw checkout.
+
+1. Clone this repository.
+2. Export or review the OpenClaw overlay files under:
+
+```text
+overlay/openclaw/
+```
+
+3. Copy the overlay files into the matching paths inside your OpenClaw checkout.
+4. From your OpenClaw checkout, rebuild:
+
+```bash
+pnpm build
+```
+
+5. Restart the gateway:
+
+```bash
+openclaw gateway restart --json
+```
+
+6. Verify in Discord with one real message.
+
+### Updating an Existing Installation
+
+When the release changes:
+
+1. Pull the latest changes from this repository.
+2. Re-apply the updated overlay files to your OpenClaw checkout.
+3. Rebuild OpenClaw.
+4. Restart the gateway.
+5. Re-run a real Discord verification.
 
 ## Multi-Bot Rules
 
