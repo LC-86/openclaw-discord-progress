@@ -12,6 +12,7 @@ Use this skill when the user wants to install, package, or enable the Discord re
 - Explains how to install the capability from GitHub
 - Guides safe Discord account configuration
 - Explains how to avoid duplicate progress cards in multi-bot setups
+- Explains the default strict progress mode so casual chat does not create cards
 - Points to the release wrapper structure without embedding private secrets
 
 ## What This Skill Does Not Do

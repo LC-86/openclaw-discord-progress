@@ -28,6 +28,7 @@ Users should treat the GitHub repository as the source of truth for:
 - release files
 - install instructions
 - multi-bot notes
+- progress mode behavior
 - safety warnings
 
 Users should treat the ClawHub skill as:
@@ -87,6 +88,11 @@ openclaw gateway restart --json
 ```
 
 8. Send one real Discord test message and confirm that only one progress card appears.
+9. Verify chat filtering:
+
+- send one casual message such as `算了，先这样吧`
+- confirm that no progress card is created in default `strict` mode
+- send one explicit task request and confirm that a card does appear
 
 ### Path 2: Direct Install From GitHub
 
@@ -125,3 +131,9 @@ Before publishing:
 ## Runtime Notes
 
 The feature depends on OpenClaw Discord runtime hooks. It is not a standalone prompt-only skill.
+
+Default runtime behavior:
+
+- `OPENCLAW_DISCORD_PROGRESS_MODE=strict`
+- casual chat should not create progress cards
+- real task execution still creates cards when the request is task-like or the run enters tool execution

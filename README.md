@@ -14,6 +14,7 @@ It is designed for OpenClaw-based Discord bots that need:
 - support for both normal messages and slash commands
 - reduced noisy status spam in busy channels
 - safer multi-bot deployment guidance to avoid duplicate cards
+- stricter default gating so casual chat does not become a full task card
 
 ## Release Layout
 
@@ -52,6 +53,27 @@ Chinese documentation:
 - Successful runs keep the channel focused on the main card and final reply
 - Intermediate status spam is reduced
 - Failure paths can still emit a separate signal when needed
+- Default `strict` mode suppresses cards for casual chat, complaints, and short back-and-forth discussion
+- Real execution still activates cards when the message is task-like or the run enters tool execution
+
+### Progress Display Modes
+
+The runtime supports `OPENCLAW_DISCORD_PROGRESS_MODE`:
+
+- `strict`
+  Default. Only task-like requests or actual execution events create a card.
+- `auto`
+  More eager. Useful if you want more runs to surface progress automatically.
+- `verbose`
+  Almost every run creates a card.
+- `off`
+  Disables Discord progress cards.
+
+Recommended default:
+
+```bash
+OPENCLAW_DISCORD_PROGRESS_MODE=strict
+```
 
 ### Multi-Bot Safety
 
@@ -160,6 +182,13 @@ openclaw gateway restart --json
 ```
 
 6. Verify in Discord with one real message.
+
+Recommended verification:
+
+- send one casual message such as `算了，先这样吧`
+- confirm that no progress card is created
+- send one task-like message such as `please check today's Shanghai weather and summarize it`
+- confirm that one live card appears and freezes into a final report
 
 ### Updating an Existing Installation
 

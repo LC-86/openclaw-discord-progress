@@ -12,7 +12,7 @@ OpenClaw Discord Progress Installer
 
 ## Suggested Short Description
 
-Install and configure OpenClaw Discord task progress cards with low-noise updates and multi-bot safety guidance.
+Install and configure OpenClaw Discord task progress cards with low-noise updates, strict chat filtering, and multi-bot safety guidance.
 
 ## Suggested Long Description
 
@@ -25,6 +25,7 @@ It helps users:
 - configure Discord progress cards safely
 - avoid duplicate cards in multi-bot setups
 - keep Discord task visibility high while reducing channel noise
+- keep casual chat from generating unnecessary task cards by default
 
 The actual runtime capability is distributed through the paired GitHub repository. This skill is intentionally lightweight and focuses on installation, configuration, and operational guidance.
 
