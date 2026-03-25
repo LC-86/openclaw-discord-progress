@@ -2,7 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-![OpenClaw Discord Progress live screenshot](assets/screenshots/discord-progress-live.png)
+![OpenClaw Discord Progress screenshot 1](assets/screenshots/discord-progress-shot-1.png)
+![OpenClaw Discord Progress screenshot 2](assets/screenshots/discord-progress-shot-2.png)
 
 OpenClaw Discord Progress adds low-noise, real-time task progress cards to Discord agent workflows.
 

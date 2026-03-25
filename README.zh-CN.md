@@ -2,7 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-![OpenClaw Discord Progress 实际效果截图](assets/screenshots/discord-progress-live.png)
+![OpenClaw Discord Progress 实际效果截图 1](assets/screenshots/discord-progress-shot-1.png)
+![OpenClaw Discord Progress 实际效果截图 2](assets/screenshots/discord-progress-shot-2.png)
 
 `OpenClaw Discord Progress` 用来给 OpenClaw 的 Discord Agent 工作流增加“低噪声、实时更新”的任务进度卡片。
 
