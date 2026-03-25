@@ -1,5 +1,9 @@
 # OpenClaw Discord Progress
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+![OpenClaw Discord Progress 实际效果截图](assets/screenshots/discord-progress-live.png)
+
 `OpenClaw Discord Progress` 用来给 OpenClaw 的 Discord Agent 工作流增加“低噪声、实时更新”的任务进度卡片。
 
 它主要解决这些问题：
@@ -56,6 +60,26 @@
 ## 安装方式
 
 有两种推荐路径。
+
+### 快捷安装
+
+如果你当前就在 OpenClaw 仓库根目录，可以直接执行：
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh)
+```
+
+如果你想指定 OpenClaw 安装目录：
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh) -- --target /path/to/openclaw
+```
+
+如果你只想先覆盖文件，不想立即构建或重启：
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh) -- --no-build --no-restart
+```
 
 ### 方式 A：通过 ClawHub skill 安装
 

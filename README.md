@@ -1,5 +1,9 @@
 # OpenClaw Discord Progress
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+![OpenClaw Discord Progress live screenshot](assets/screenshots/discord-progress-live.png)
+
 OpenClaw Discord Progress adds low-noise, real-time task progress cards to Discord agent workflows.
 
 It is designed for OpenClaw-based Discord bots that need:
@@ -86,6 +90,26 @@ skill/openclaw-discord-progress-installer/
 ## Installation
 
 There are two supported installation paths.
+
+### Quick Install
+
+Run this from your OpenClaw repository root:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh)
+```
+
+If you want to install into a specific OpenClaw checkout:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh) -- --target /path/to/openclaw
+```
+
+If you want to skip the automatic build or restart:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh) -- --no-build --no-restart
+```
 
 ### Option A: Install from the ClawHub Skill
 

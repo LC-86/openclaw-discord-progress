@@ -38,6 +38,26 @@ Users should treat the ClawHub skill as:
 
 ## User Installation Paths
 
+### Quick Install Command
+
+For users who are already inside an OpenClaw checkout:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh)
+```
+
+Install into a specific target checkout:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh) -- --target /path/to/openclaw
+```
+
+Skip build and restart:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/LC-86/openclaw-discord-progress/main/install.sh) -- --no-build --no-restart
+```
+
 ### Path 1: Guided Install Through ClawHub
 
 1. Install the skill.
