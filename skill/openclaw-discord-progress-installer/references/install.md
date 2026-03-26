@@ -137,3 +137,4 @@ Default runtime behavior:
 - `OPENCLAW_DISCORD_PROGRESS_MODE=strict`
 - casual chat should not create progress cards
 - real task execution still creates cards when the request is task-like or the run enters tool execution
+- users can switch modes from Discord with `/progress strict|auto|verbose|off`

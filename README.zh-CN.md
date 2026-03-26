@@ -2,6 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
+当前正式版本：`v1.0.0`
+
 ![OpenClaw Discord Progress 实际效果截图 1](assets/screenshots/discord-progress-shot-1.png)
 ![OpenClaw Discord Progress 实际效果截图 2](assets/screenshots/discord-progress-shot-2.png)
 
@@ -14,6 +16,7 @@
 - 多 Bot 模式下，如果配置不当，容易重复出卡
 - 任务完成后，缺少一张清晰的最终结果卡片
 - 随口一句闲聊也被当成任务，导致频道体验变差
+- 需要直接在 Discord 里切换任务识别门槛，而不是只能改环境变量
 
 ## 这个项目包含什么
 
@@ -47,7 +50,7 @@
 
 ### 进度显示模式
 
-运行时支持 `OPENCLAW_DISCORD_PROGRESS_MODE`（意思是：控制什么情况下显示任务卡）：
+运行时支持 `OPENCLAW_DISCORD_PROGRESS_MODE`（意思是：控制什么情况下显示任务卡），也支持直接在 Discord 里用 `/progress` 切换：
 
 - `strict`
   默认推荐。只有任务型消息，或者真的进入执行链路时，才显示卡片。
@@ -63,6 +66,18 @@
 ```bash
 OPENCLAW_DISCORD_PROGRESS_MODE=strict
 ```
+
+也可以直接在 Discord 里操作：
+
+```text
+/progress
+/progress strict
+/progress auto
+/progress verbose
+/progress off
+```
+
+切换后的模式会写入 OpenClaw 配置文件，所以重启后仍然生效。
 
 ### 多 Bot 安全
 

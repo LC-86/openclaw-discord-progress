@@ -23,6 +23,7 @@ It helps users:
 - understand what the capability does
 - install the release from GitHub
 - configure Discord progress cards safely
+- switch progress display mode directly from Discord with `/progress`
 - avoid duplicate cards in multi-bot setups
 - keep Discord task visibility high while reducing channel noise
 - keep casual chat from generating unnecessary task cards by default

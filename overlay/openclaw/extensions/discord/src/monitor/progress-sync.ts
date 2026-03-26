@@ -42,12 +42,33 @@ export type DiscordProgressSync = {
 
 type ProgressDisplayMode = "off" | "strict" | "auto" | "verbose";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function isProgressSyncEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   const raw = env.OPENCLAW_DISCORD_PROGRESS_SYNC?.trim().toLowerCase();
   return raw !== "0" && raw !== "false" && raw !== "off";
 }
 
-function resolveProgressDisplayMode(env: NodeJS.ProcessEnv = process.env): ProgressDisplayMode {
+function resolveProgressDisplayMode(
+  cfg?: OpenClawConfig,
+  env: NodeJS.ProcessEnv = process.env,
+): ProgressDisplayMode {
+  const channels = isRecord((cfg as { channels?: unknown } | undefined)?.channels)
+    ? (((cfg as { channels?: unknown } | undefined)?.channels) as Record<string, unknown>)
+    : undefined;
+  const discordCfg = isRecord(channels?.discord) ? (channels.discord as Record<string, unknown>) : undefined;
+  const progressCfg = isRecord(discordCfg?.progress) ? discordCfg.progress : undefined;
+  const configured = progressCfg?.mode;
+  if (
+    configured === "off" ||
+    configured === "strict" ||
+    configured === "auto" ||
+    configured === "verbose"
+  ) {
+    return configured;
+  }
   const raw = env.OPENCLAW_DISCORD_PROGRESS_MODE?.trim().toLowerCase();
   if (raw === "off" || raw === "strict" || raw === "auto" || raw === "verbose") {
     return raw;
@@ -108,6 +129,13 @@ function clampPercent(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+function elapsedSeconds(startedAt?: number): number {
+  if (!startedAt) {
+    return 0;
+  }
+  return Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+}
+
 function renderBar(percent: number): string {
   const width = 12;
   const safe = clampPercent(percent);
@@ -116,16 +144,54 @@ function renderBar(percent: number): string {
 }
 
 function formatDuration(startedAt?: number): string {
-  if (!startedAt) {
-    return "0秒";
-  }
-  const seconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+  const seconds = elapsedSeconds(startedAt);
   if (seconds < 60) {
     return `${seconds}秒`;
   }
   const minutes = Math.floor(seconds / 60);
   const remain = seconds % 60;
   return `${minutes}分${remain}秒`;
+}
+
+function estimateProgress(
+  stage: ProgressStage,
+  state: Pick<
+    ProgressState,
+    "toolCount" | "startedAt" | "sawReasoning" | "sawCompaction" | "sawAssistant" | "percent"
+  >,
+): number {
+  const seconds = elapsedSeconds(state.startedAt);
+  const timeBoost = Math.min(18, Math.floor(seconds / 8) * 3);
+  const toolBoost = Math.min(30, state.toolCount * 4);
+
+  switch (stage) {
+    case "waiting":
+      return 0;
+    case "running":
+      return 8;
+    case "reasoning":
+      return Math.max(state.percent, 16 + timeBoost + (state.sawReasoning ? 8 : 0));
+    case "tool":
+      return Math.max(state.percent, 22 + toolBoost + Math.min(12, Math.floor(seconds / 10) * 2));
+    case "compacting":
+      return Math.max(state.percent, 58 + Math.min(10, Math.floor(seconds / 12) * 2));
+    case "finalizing": {
+      const base = state.toolCount > 0 ? 74 : 68;
+      const reasoningBoost = state.sawReasoning ? 5 : 0;
+      const compactionPenalty = state.sawCompaction ? -2 : 0;
+      const finishBoost = Math.min(12, Math.floor(seconds / 15) * 2);
+      return Math.max(
+        state.percent,
+        Math.min(95, base + reasoningBoost + compactionPenalty + finishBoost),
+      );
+    }
+    case "completed":
+      return 100;
+    case "failed":
+      return Math.max(state.percent, 96);
+    default:
+      return state.percent;
+  }
 }
 
 function stageLabel(stage: ProgressStage): string {
@@ -310,7 +376,7 @@ export function createDiscordProgressSync(params: {
   env?: NodeJS.ProcessEnv;
 }): DiscordProgressSync {
   const enabled = isProgressSyncEnabled(params.env);
-  const mode = resolveProgressDisplayMode(params.env);
+  const mode = resolveProgressDisplayMode(params.cfg, params.env);
   const debounceMs = Math.max(0, Math.round(params.debounceMs ?? 1200));
   const state: ProgressState = {
     title: summarizeText(params.title, 120) ?? "未命名任务",
@@ -437,7 +503,7 @@ export function createDiscordProgressSync(params: {
         {
           runId,
           stage: "running",
-          percent: 8,
+          percent: estimateProgress("running", state),
           message: "Agent 已开始执行任务",
         },
         {
@@ -449,7 +515,7 @@ export function createDiscordProgressSync(params: {
     onReasoningStream: async () => {
       await updateState({
         stage: "reasoning",
-        percent: Math.max(state.percent, 24),
+        percent: estimateProgress("reasoning", { ...state, sawReasoning: true }),
         message: "正在分析问题和整理执行路径",
         sawReasoning: true,
       }, { activate: true });
@@ -459,7 +525,7 @@ export function createDiscordProgressSync(params: {
       const toolName = summarizeText(payload.name, 48) ?? "unknown";
       await updateState({
         stage: "tool",
-        percent: Math.max(state.percent, Math.min(84, 28 + state.toolCount * 14)),
+        percent: estimateProgress("tool", state),
         lastToolName: toolName,
         message:
           payload.phase === "update"
@@ -470,7 +536,7 @@ export function createDiscordProgressSync(params: {
     onAssistantMessageStart: async () => {
       await updateState({
         stage: "finalizing",
-        percent: Math.max(state.percent, 90),
+        percent: estimateProgress("finalizing", { ...state, sawAssistant: true }),
         message: "正在整理最终回复",
         sawAssistant: true,
       });
@@ -478,7 +544,7 @@ export function createDiscordProgressSync(params: {
     onCompactionStart: async () => {
       await updateState({
         stage: "compacting",
-        percent: Math.max(state.percent, 60),
+        percent: estimateProgress("compacting", { ...state, sawCompaction: true }),
         message: "上下文较长，正在压缩历史消息",
         sawCompaction: true,
       }, { activate: true });
@@ -486,7 +552,7 @@ export function createDiscordProgressSync(params: {
     onCompactionEnd: async () => {
       await updateState({
         stage: "reasoning",
-        percent: Math.max(state.percent, 72),
+        percent: estimateProgress("reasoning", state),
         message: "上下文压缩完成，继续执行",
       }, { activate: true });
     },
@@ -495,7 +561,10 @@ export function createDiscordProgressSync(params: {
       await updateState({
         summary,
         stage: "finalizing",
-        percent: Math.max(state.percent, 96),
+        percent: Math.max(
+          estimateProgress("finalizing", { ...state, sawAssistant: true }),
+          state.percent + 3,
+        ),
         message: "最终结果已经生成，正在发送到 Discord",
       }, {
         activate:
@@ -517,7 +586,10 @@ export function createDiscordProgressSync(params: {
         ) ?? undefined;
       Object.assign(state, {
         stage: params.error || params.aborted ? "failed" : "completed",
-        percent: params.error || params.aborted ? Math.max(state.percent, 96) : 100,
+        percent:
+          params.error || params.aborted
+            ? estimateProgress("failed", state)
+            : estimateProgress("completed", state),
         message: params.aborted
           ? "任务已中止"
           : params.error

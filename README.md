@@ -2,6 +2,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
+Current release: `v1.0.0`
+
 ![OpenClaw Discord Progress screenshot 1](assets/screenshots/discord-progress-shot-1.png)
 ![OpenClaw Discord Progress screenshot 2](assets/screenshots/discord-progress-shot-2.png)
 
@@ -16,6 +18,7 @@ It is designed for OpenClaw-based Discord bots that need:
 - reduced noisy status spam in busy channels
 - safer multi-bot deployment guidance to avoid duplicate cards
 - stricter default gating so casual chat does not become a full task card
+- direct `/progress` mode switching from Discord
 
 ## Release Layout
 
@@ -60,7 +63,7 @@ Chinese documentation:
 
 ### Progress Display Modes
 
-The runtime supports `OPENCLAW_DISCORD_PROGRESS_MODE`:
+The runtime supports `OPENCLAW_DISCORD_PROGRESS_MODE` and the in-Discord `/progress` command:
 
 - `strict`
   Default. Only task-like requests or actual execution events create a card.
@@ -76,6 +79,18 @@ Recommended default:
 ```bash
 OPENCLAW_DISCORD_PROGRESS_MODE=strict
 ```
+
+You can also switch modes directly from Discord:
+
+```text
+/progress
+/progress strict
+/progress auto
+/progress verbose
+/progress off
+```
+
+The selected mode is written into the OpenClaw config file, so it persists after restart.
 
 ### Multi-Bot Safety
 

@@ -1,3 +1,5 @@
+extensions/discord/src/config-schema.ts
+extensions/discord/src/shared.ts
 extensions/discord/src/monitor/progress-sync.ts
 extensions/discord/src/monitor/progress-sync.test.ts
 extensions/discord/src/monitor/message-handler.process.ts
@@ -7,3 +9,7 @@ extensions/discord/src/monitor/native-command.commands-allowfrom.test.ts
 extensions/discord/src/send.messages.ts
 extensions/discord/src/send.sends-basic-channel-messages.test.ts
 extensions/discord/src/send.types.ts
+src/auto-reply/commands-registry.data.ts
+src/auto-reply/reply/commands-core.ts
+src/auto-reply/reply/commands-session.ts
+src/auto-reply/reply/commands-session.progress.test.ts
