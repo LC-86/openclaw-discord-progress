@@ -2,12 +2,19 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-Current release: `v1.0.0`
+Current release: `v1.0.1`
 
 ![OpenClaw Discord Progress screenshot 1](assets/screenshots/discord-progress-shot-1.png)
 ![OpenClaw Discord Progress screenshot 2](assets/screenshots/discord-progress-shot-2.png)
 
 OpenClaw Discord Progress adds low-noise, real-time task progress cards to Discord agent workflows.
+
+This release is verified against `OpenClaw 2026.3.24`.
+
+If your OpenClaw checkout is newer or older than that baseline, apply the overlay first, then at minimum run:
+
+- `pnpm build`
+- one real Discord smoke test to confirm the card appears, updates in place, and freezes on completion
 
 It is designed for OpenClaw-based Discord bots that need:
 
@@ -216,6 +223,18 @@ When the release changes:
 3. Rebuild OpenClaw.
 4. Restart the gateway.
 5. Re-run a real Discord verification.
+
+## Version Compatibility
+
+`v1.0.1` is primarily a compatibility release for `OpenClaw 2026.3.24`, not a feature expansion.
+
+It updates the overlay to match `plugin-sdk` path changes introduced in newer OpenClaw builds, including:
+
+- `channel-feedback`, `channel-inbound`, and `reply-history`
+- `command-auth`
+- the observer callbacks used by the Discord message pipeline to keep the progress card lifecycle intact
+
+If you are upgrading from `v1.0.0`, re-apply the full `overlay/openclaw/` snapshot instead of hand-picking only one or two files.
 
 ## Multi-Bot Rules
 

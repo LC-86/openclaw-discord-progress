@@ -13,8 +13,10 @@ import {
 import { ApplicationCommandOptionType } from "discord-api-types/v10";
 import { resolveHumanDelayConfig } from "openclaw/plugin-sdk/agent-runtime";
 import { createChannelReplyPipeline } from "openclaw/plugin-sdk/channel-reply-pipeline";
-import { resolveCommandAuthorizedFromAuthorizers } from "openclaw/plugin-sdk/channel-runtime";
-import { resolveNativeCommandSessionTargets } from "openclaw/plugin-sdk/channel-runtime";
+import {
+  resolveCommandAuthorizedFromAuthorizers,
+  resolveNativeCommandSessionTargets,
+} from "openclaw/plugin-sdk/command-auth";
 import type { OpenClawConfig, loadConfig } from "openclaw/plugin-sdk/config-runtime";
 import { isDangerousNameMatchingEnabled } from "openclaw/plugin-sdk/config-runtime";
 import { resolveOpenProviderRuntimeGroupPolicy } from "openclaw/plugin-sdk/config-runtime";
@@ -36,7 +38,7 @@ import type {
   CommandArgValues,
   CommandArgs,
   NativeCommandSpec,
-} from "openclaw/plugin-sdk/reply-runtime";
+} from "openclaw/plugin-sdk/command-auth";
 import {
   buildCommandTextFromArgs,
   findCommandByNativeName,
@@ -45,7 +47,7 @@ import {
   resolveCommandArgChoices,
   resolveCommandArgMenu,
   serializeCommandArgs,
-} from "openclaw/plugin-sdk/reply-runtime";
+} from "openclaw/plugin-sdk/command-auth";
 import { dispatchReplyWithDispatcher } from "openclaw/plugin-sdk/reply-runtime";
 import type { ReplyPayload } from "openclaw/plugin-sdk/reply-runtime";
 import { logVerbose } from "openclaw/plugin-sdk/runtime-env";

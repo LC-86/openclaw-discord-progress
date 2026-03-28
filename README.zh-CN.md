@@ -2,12 +2,19 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-当前正式版本：`v1.0.0`
+当前正式版本：`v1.0.1`
 
 ![OpenClaw Discord Progress 实际效果截图 1](assets/screenshots/discord-progress-shot-1.png)
 ![OpenClaw Discord Progress 实际效果截图 2](assets/screenshots/discord-progress-shot-2.png)
 
 `OpenClaw Discord Progress` 用来给 OpenClaw 的 Discord Agent 工作流增加“低噪声、实时更新”的任务进度卡片。
+
+当前这版已验证兼容 `OpenClaw 2026.3.24`。
+
+如果你的 OpenClaw 版本高于或低于这个版本，建议在应用 overlay（覆盖层，意思是：把这里导出的源码文件覆盖到你的 OpenClaw 对应目录）后，至少补做两步：
+
+- `pnpm build`（构建，意思是：重新生成可运行代码）
+- 一轮真实 Discord 烟测（冒烟验证，意思是：发一条真实任务看卡片是否正常弹出、更新、冻结）
 
 它主要解决这些问题：
 
@@ -191,6 +198,18 @@ openclaw gateway restart --json
 3. 重新构建 OpenClaw
 4. 重启 gateway
 5. 重新做一次真实 Discord 验证
+
+## 版本兼容说明
+
+`v1.0.1` 这次主要不是加新功能，而是把任务卡 overlay 对齐到 `OpenClaw 2026.3.24` 的 `plugin-sdk` 接口变化。
+
+这一版修复了几类升级后容易失效的点：
+
+- `channel-feedback` / `channel-inbound` / `reply-history` 子路径调整
+- `command-auth` 子路径调整
+- Discord 消息处理链路里任务卡观察者回调没有被正确保留的问题
+
+如果你是从更早的 `v1.0.0` 升级，建议直接重新覆盖 `overlay/openclaw/` 全量文件，不要只手动挑 1 到 2 个文件改。
 
 ## 不要公开的内容
 

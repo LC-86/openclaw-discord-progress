@@ -2,6 +2,23 @@
 
 All notable changes to `openclaw-discord-progress` are documented in this file.
 
+## v1.0.1 - 2026-03-28
+
+Compatibility maintenance release for `OpenClaw 2026.3.24`.
+
+### Fixed
+
+- Updated Discord message progress integration to use the current `plugin-sdk` subpaths for `channel-feedback`, `channel-inbound`, and `reply-history`
+- Updated Discord native command integration to use the current `command-auth` subpath exports
+- Restored the Discord message observer callbacks required for task-card start, delivery, and freeze behavior on newer OpenClaw builds
+
+### Verification
+
+- `pnpm build` passed against `OpenClaw 2026.3.24`
+- `vitest`: `src/auto-reply/reply/commands-session.progress.test.ts` passed
+- `vitest`: `extensions/discord/src/monitor/progress-sync.test.ts` passed
+- `vitest`: `extensions/discord/src/monitor/native-command.commands-allowfrom.test.ts` passed
+
 ## v1.0.0 - 2026-03-26
 
 Initial stable release.
